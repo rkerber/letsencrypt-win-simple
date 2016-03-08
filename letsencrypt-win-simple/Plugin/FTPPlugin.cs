@@ -92,14 +92,8 @@ namespace LetsEncrypt.ACME.Simple
                         PluginName = Name,
                         AlternativeNames = sanList
                     };
-                    var auth = Program.Authorize(target);
-                    if (auth.Status == "valid")
-                    {
-                        var pfxFilename = Program.GetCertificate(target);
-                        Console.WriteLine("");
-                        Console.WriteLine($"You can find the certificate at {pfxFilename}");
-                        Log.Information("You can find the certificate at {pfxFilename}");
-                    }
+
+                    Auto(target);
                 }
                 else
                 {
@@ -108,6 +102,25 @@ namespace LetsEncrypt.ACME.Simple
                     Log.Error(
                         "You entered too many hosts for a San certificate. Let's Encrypt currently has a maximum of 100 alternative names per certificate.");
                 }
+            }
+        }
+
+        public override void Auto(Target target)
+        {
+            if (FtpCredentials != null)
+            {
+                var auth = Program.Authorize(target);
+                if (auth.Status == "valid")
+                {
+                    var pfxFilename = Program.GetCertificate(target);
+                    Console.WriteLine("");
+                    Console.WriteLine($"You can find the certificate at {pfxFilename}");
+                    Log.Information("You can find the certificate at {pfxFilename}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("The FTP Credentials are not set. Please specify them and try again.");
             }
         }
 
@@ -139,7 +152,7 @@ namespace LetsEncrypt.ACME.Simple
                 for (int i = 1; i < (directories.Length - 1); i++)
                 {
                     ftpConnection = ftpConnection + directories[i] + "/";
-                    FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpConnection);
+                    FtpWebRequest request = (FtpWebRequest) WebRequest.Create(ftpConnection);
                     request.Method = WebRequestMethods.Ftp.MakeDirectory;
                     request.Credentials = FtpCredentials;
 
@@ -151,7 +164,7 @@ namespace LetsEncrypt.ACME.Simple
 
                     try
                     {
-                        FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+                        FtpWebResponse response = (FtpWebResponse) request.GetResponse();
                         Stream ftpStream = response.GetResponseStream();
 
                         ftpStream.Close();
@@ -187,7 +200,7 @@ namespace LetsEncrypt.ACME.Simple
             writer.Flush();
             stream.Position = 0;
 
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpConnection);
+            FtpWebRequest request = (FtpWebRequest) WebRequest.Create(ftpConnection);
 
             request.Method = WebRequestMethods.Ftp.UploadFile;
             request.Credentials = FtpCredentials;
@@ -202,7 +215,7 @@ namespace LetsEncrypt.ACME.Simple
             stream.CopyTo(requestStream);
             requestStream.Close();
 
-            FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+            FtpWebResponse response = (FtpWebResponse) request.GetResponse();
 
             Console.WriteLine($"Upload Status {response.StatusDescription}");
             Log.Information("Upload Status {StatusDescription}", response.StatusDescription);
@@ -224,7 +237,7 @@ namespace LetsEncrypt.ACME.Simple
 
             Log.Debug("UserName {@UserName}", FtpCredentials.UserName);
 
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpConnection);
+            FtpWebRequest request = (FtpWebRequest) WebRequest.Create(ftpConnection);
 
             if (fileType == FileType.File)
             {
@@ -242,7 +255,7 @@ namespace LetsEncrypt.ACME.Simple
                 request.UsePassive = true;
             }
 
-            FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+            FtpWebResponse response = (FtpWebResponse) request.GetResponse();
 
             Console.WriteLine($"Delete Status {response.StatusDescription}");
             Log.Information("Delete Status {StatusDescription}", response.StatusDescription);
@@ -264,7 +277,7 @@ namespace LetsEncrypt.ACME.Simple
 
             Log.Debug("UserName {@UserName}", FtpCredentials.UserName);
 
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpConnection);
+            FtpWebRequest request = (FtpWebRequest) WebRequest.Create(ftpConnection);
 
             request.Method = WebRequestMethods.Ftp.ListDirectory;
             request.Credentials = FtpCredentials;
@@ -275,7 +288,7 @@ namespace LetsEncrypt.ACME.Simple
                 request.UsePassive = true;
             }
 
-            FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+            FtpWebResponse response = (FtpWebResponse) request.GetResponse();
 
             Stream responseStream = response.GetResponseStream();
             StreamReader reader = new StreamReader(responseStream);

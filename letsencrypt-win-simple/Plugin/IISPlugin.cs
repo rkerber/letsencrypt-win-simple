@@ -181,7 +181,7 @@ namespace LetsEncrypt.ACME.Simple
                 }
             }
 
-            return result;
+            return result.OrderBy(r => r.SiteId).ToList();
         }
 
         private readonly string _sourceFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web_config.xml");
@@ -274,7 +274,7 @@ at " + _sourceFilePath);
                             if (IP == "0.0.0.0")
                             {
                                 IP = "";
-                                    //Remove the IP if it is 0.0.0.0 That happens if an IP wasn't set on the HTTP site and it used any available IP
+                                //Remove the IP if it is 0.0.0.0 That happens if an IP wasn't set on the HTTP site and it used any available IP
                             }
 
                             var iisBinding = site.Bindings.Add(IP + ":443:" + host, certificate.GetCertHash(),
@@ -310,7 +310,10 @@ at " + _sourceFilePath);
                     {
                         hosts.Add(target.Host);
                     }
-                    hosts.AddRange(target.AlternativeNames);
+                    if (target.AlternativeNames != null && target.AlternativeNames.Any())
+                    {
+                        hosts.AddRange(target.AlternativeNames);
+                    }
 
                     foreach (var host in hosts)
                     {
@@ -336,7 +339,7 @@ at " + _sourceFilePath);
                                 Log.Information("Adding https Binding");
                                 var iisBinding = site.Bindings.Add(existingBinding.BindingInformation, "https");
                                 iisBinding.SetAttributeValue("sslFlags", 3);
-                                    // Enable Centralized Certificate Store with SNI
+                                // Enable Centralized Certificate Store with SNI
                             }
                             else if (existingBinding.GetAttributeValue("sslFlags").ToString() != "3")
                             {
@@ -349,7 +352,7 @@ at " + _sourceFilePath);
                             }
                             else
                             {
-                                Console.WriteLine("Not updating binding, see log for details");
+                                Console.WriteLine("You specified Central SSL, have an existing binding, aren't replacing the binding, and the existing binding is using Central SSL with SNI, so there is nothing to update for this binding");
                                 Log.Information(
                                     "You specified Central SSL, have an existing binding, aren't replacing the binding, and the existing binding is using Central SSL with SNI, so there is nothing to update for this binding");
                             }
@@ -371,13 +374,13 @@ at " + _sourceFilePath);
                                 if (IP == "0.0.0.0")
                                 {
                                     IP = "";
-                                        //Remove the IP if it is 0.0.0.0 That happens if an IP wasn't set on the HTTP site and it used any available IP
+                                    //Remove the IP if it is 0.0.0.0 That happens if an IP wasn't set on the HTTP site and it used any available IP
                                 }
 
                                 var iisBinding = site.Bindings.Add(IP + ":443:" + host, "https");
 
                                 iisBinding.SetAttributeValue("sslFlags", 3);
-                                    // Enable Centralized Certificate Store with SNI
+                                // Enable Centralized Certificate Store with SNI
                             }
                             else
                             {
@@ -420,7 +423,7 @@ at " + _sourceFilePath);
         public override void Renew(Target target)
         {
             _iisVersion = GetIisVersion();
-            Program.Auto(target);
+            Auto(target);
         }
 
         public override void DeleteAuthorization(string answerPath, string token, string webRootPath, string filePath)

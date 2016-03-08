@@ -97,6 +97,11 @@ namespace LetsEncrypt.ACME.Simple
             }
         }
 
+        public override void Auto(Target target)
+        {
+            Console.WriteLine("Auto isn't supported for IISSiteServer Plugin");
+        }
+
         public override void Renew(Target target)
         {
             List<Target> runSites = new List<Target>();
@@ -149,13 +154,13 @@ namespace LetsEncrypt.ACME.Simple
                     if (totalTarget.AlternativeNames == null)
                     {
                         Target altNames = site.Copy();
-                            //Had to copy the object otherwise the alternative names for the site were being updated from Totaltarget.
+                        //Had to copy the object otherwise the alternative names for the site were being updated from Totaltarget.
                         totalTarget.AlternativeNames = altNames.AlternativeNames;
                     }
                     else
                     {
                         Target altNames = site.Copy();
-                            //Had to copy the object otherwise the alternative names for the site were being updated from Totaltarget.
+                        //Had to copy the object otherwise the alternative names for the site were being updated from Totaltarget.
                         totalTarget.AlternativeNames.AddRange(altNames.AlternativeNames);
                     }
                 }
@@ -190,6 +195,7 @@ namespace LetsEncrypt.ACME.Simple
             }
             else if (!Program.Options.Renew || !Program.Options.KeepExisting)
             {
+                var pfxFilename = Program.GetCertificate(totalTarget);
                 //If it is using centralized SSL, renewing, and replacing existing it needs to replace the existing binding.
                 Log.Information("Updating new Central SSL Certificate");
                 foreach (var site in runSites)
